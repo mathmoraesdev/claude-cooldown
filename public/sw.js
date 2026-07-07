@@ -150,7 +150,19 @@ async function showNotification(title, body, tag) {
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+      // Use allSettled instead of addAll: addAll fails the WHOLE install
+      // if even one asset 404s or times out (common on flaky mobile
+      // networks), which leaves the SW stuck installing forever and makes
+      // navigator.serviceWorker.ready() (used by push subscribe) hang
+      // indefinitely. Caching each asset independently means a single
+      // failure doesn't block activation.
+      return Promise.allSettled(
+        ASSETS.map((asset) =>
+          cache.add(asset).catch((err) => {
+            console.warn('Falha ao cachear asset (ignorado):', asset, err);
+          })
+        )
+      );
     }).then(() => self.skipWaiting())
   );
   startBackgroundTicking();

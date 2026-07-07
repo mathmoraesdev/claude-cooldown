@@ -14,6 +14,24 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+// Render's free tier puts the server to sleep after inactivity; the first
+// request after that can take 30-60s to wake it up. Give it real room, but
+// don't let a truly dead server hang the UI forever.
+async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs = 45000): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (e: any) {
+    if (e.name === 'AbortError') {
+      throw new Error('O servidor demorou demais para responder (pode estar "dormindo", tente de novo em instantes).');
+    }
+    throw e;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 class PushService {
   isSupported(): boolean {
     return 'serviceWorker' in navigator && 'PushManager' in window;
@@ -49,11 +67,20 @@ class PushService {
         return { ok: false, error: 'Permissão de notificação negada.' };
       }
 
-      const keyRes = await fetch(`${cleanUrl}/api/vapid-public-key`);
+      const keyRes = await fetchWithTimeout(`${cleanUrl}/api/vapid-public-key`);
       if (!keyRes.ok) throw new Error('Não foi possível contatar o servidor.');
       const { publicKey } = await keyRes.json();
 
-      const registration = await navigator.serviceWorker.ready;
+      // navigator.serviceWorker.ready never resolves if the service worker
+      // failed to install/activate (e.g. a precache asset failed to load on
+      // a flaky mobile connection). Race it against a timeout so the button
+      // shows a real error instead of spinning forever.
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('O service worker demorou demais para ficar pronto. Feche o app, abra de novo e tente ativar novamente.')), 10000)
+        ),
+      ]);
 
       let subscription = await registration.pushManager.getSubscription();
       if (!subscription) {
@@ -63,7 +90,7 @@ class PushService {
         });
       }
 
-      const subRes = await fetch(`${cleanUrl}/api/subscribe`, {
+      const subRes = await fetchWithTimeout(`${cleanUrl}/api/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subscription: subscription.toJSON() }),
