@@ -1,0 +1,21 @@
+{
+  "name": "claude-cooldown-push-server",
+  "version": "1.0.0",
+  "description": "Servidor de Web Push para o Claude Cooldown notificar mesmo com o app fechado",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "web-push": "^3.6.7"
+  }
+}

@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-claude-orange: #E07A5F; /* Vibrant terracotta / warm clay for dark mode */
+  --color-claude-dark: #1B1816; /* Claude's rich warm charcoal page background */
+  --color-claude-card: #221F1C; /* Slightly lighter warm charcoal for cards */
+  --color-claude-purple: #E07A5F; /* Map purple fallback to Claude terracotta */
+  --color-claude-bg-hover: #2D2925; /* Lighter sand / warm brown highlight for hover and inner frames */
+  --color-claude-border: #36312D; /* Warm subtle dark border */
+  --color-claude-text-primary: #F3F0E9; /* Claude's signature warm light cream text */
+  --color-claude-text-secondary: #A1958F; /* Soft warm grayish-brown for secondary text */
+}
+
+/* Base resets & improvements */
+html, body, #root {
+  background-color: var(--color-claude-dark);
+  color: var(--color-claude-text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* Modern custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-claude-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-claude-bg-hover);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-claude-border);
+}
+
+/* Focus outline glow */
+input:focus, button:focus-visible {
+  outline: 2px solid var(--color-claude-orange);
+  outline-offset: 2px;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+

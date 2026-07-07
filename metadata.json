@@ -1,0 +1,6 @@
+{
+  "name": "Claude Cooldown",
+  "description": "Gerenciador de limites de uso e contagem regressiva para contas do Claude.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
