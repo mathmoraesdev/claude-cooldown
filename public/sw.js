@@ -1,10 +1,10 @@
 const CACHE_NAME = 'claude-cooldown-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 let checkInterval = null;
@@ -134,12 +134,12 @@ function startBackgroundTicking() {
 async function showNotification(title, body, tag) {
   const options = {
     body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
     tag,
     vibrate: [200, 100, 200],
     data: {
-      url: '/'
+      url: self.registration.scope
     }
   };
   return self.registration.showNotification(title, options);
@@ -223,12 +223,12 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: payload.body || '',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
     tag: payload.tag || 'claude-cooldown-push',
     renotify: true,
     vibrate: [200, 100, 200],
-    data: { url: '/' }
+    data: { url: self.registration.scope }
   };
 
   event.waitUntil(self.registration.showNotification(payload.title || 'Claude Cooldown', options));
@@ -250,7 +250,7 @@ self.addEventListener('notificationclick', (event) => {
         }
         return client.focus();
       }
-      return self.clients.openWindow('/');
+      return self.clients.openWindow(self.registration.scope);
     })
   );
 });

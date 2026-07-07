@@ -268,7 +268,7 @@ export default function App() {
           {/* Logo Brand */}
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl overflow-hidden shadow-lg shadow-claude-orange/20 border border-claude-orange/15 bg-claude-card">
-              <img src="/icon-192.png" referrerPolicy="no-referrer" alt="Claude Cooldown Logo" className="w-full h-full object-cover" />
+              <img src={`${import.meta.env.BASE_URL}icon-192.png`} referrerPolicy="no-referrer" alt="Claude Cooldown Logo" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="font-display text-base sm:text-xl font-extrabold tracking-tight text-claude-text-primary leading-tight">

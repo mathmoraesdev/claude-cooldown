@@ -149,8 +149,8 @@ class WebNotificationService {
     if (this.isSupported() && Notification.permission === 'granted') {
       const options: any = {
         body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
+        icon: `${import.meta.env.BASE_URL}icon-192.png`,
+        badge: `${import.meta.env.BASE_URL}icon-192.png`,
         tag: 'claude-cooldown-alert',
         renotify: true,
         vibrate: [200, 100, 200],
@@ -172,7 +172,7 @@ class WebNotificationService {
         try {
           const notification = new Notification(title, {
             body,
-            icon: '/icon-192.png',
+            icon: `${import.meta.env.BASE_URL}icon-192.png`,
             tag: 'claude-cooldown-' + Date.now(),
           });
           notification.onclick = () => {
@@ -379,8 +379,8 @@ class WebNotificationService {
     try {
       const options: any = {
         body,
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
+        icon: `${import.meta.env.BASE_URL}icon-192.png`,
+        badge: `${import.meta.env.BASE_URL}icon-192.png`,
         tag,
         vibrate: [200, 100, 200],
       };
