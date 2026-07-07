@@ -1,10 +1,11 @@
-const CACHE_NAME = 'claude-cooldown-v2';
+const CACHE_NAME = 'claude-cooldown-v3';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './badge-icon.png'
 ];
 
 let checkInterval = null;
@@ -135,7 +136,7 @@ async function showNotification(title, body, tag) {
   const options = {
     body,
     icon: './icon-192.png',
-    badge: './icon-192.png',
+    badge: './badge-icon.png',
     tag,
     vibrate: [200, 100, 200],
     data: {
@@ -224,7 +225,7 @@ self.addEventListener('push', (event) => {
   const options = {
     body: payload.body || '',
     icon: './icon-192.png',
-    badge: './icon-192.png',
+    badge: './badge-icon.png',
     tag: payload.tag || 'claude-cooldown-push',
     renotify: true,
     vibrate: [200, 100, 200],
