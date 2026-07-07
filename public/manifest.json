@@ -1,6 +1,6 @@
 {
   "name": "Claude Cooldown",
-  "short_name": "Claude CD",
+  "short_name": "Claude Control",
   "description": "Gerenciador de limites de uso para contas do Claude.",
   "id": ".",
   "start_url": ".",
