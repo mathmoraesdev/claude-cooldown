@@ -67,8 +67,16 @@ const THRESHOLDS = [
 // Given a remaining-seconds value, return every checkpoint name already "in the past"
 // (used to pre-mark checkpoints as done when an account is first seen, so we don't
 // blast a burst of old notifications the first time the app syncs).
+// Folga de 10s: só consideramos um checkpoint "já passado" (e portanto não
+// notificável) se sobrar bem menos tempo que o limiar dele. Sem essa folga,
+// um cooldown criado com exatamente 30min, 10min, etc. seria marcado como
+// "já notificado" no instante em que é criado (por causa do atraso normal
+// de rede/processamento entre o cliente calcular o horário e o servidor
+// receber o sync), fazendo aquele aviso nunca disparar.
+const ALREADY_PASSED_GRACE_SECONDS = 10;
+
 function checkpointsAlreadyPassed(remainingSeconds) {
-  return THRESHOLDS.filter(([, sec]) => remainingSeconds <= sec).map(([name]) => name);
+  return THRESHOLDS.filter(([, sec]) => remainingSeconds <= sec - ALREADY_PASSED_GRACE_SECONDS).map(([name]) => name);
 }
 
 async function sendPush(record, title, body, tag) {
