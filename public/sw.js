@@ -1,4 +1,4 @@
-const CACHE_NAME = 'claude-cooldown-v3';
+const CACHE_NAME = 'claude-cooldown-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -8,128 +8,15 @@ const ASSETS = [
   './badge-icon.png'
 ];
 
-let checkInterval = null;
-
-// Start background check loop to evaluate cooldown times and trigger notifications when closed
-function startBackgroundTicking() {
-  if (checkInterval) return;
-
-  checkInterval = setInterval(async () => {
-    try {
-      const cache = await caches.open('claude-cooldown-data');
-      const response = await cache.match('/api/cooldown-data');
-      if (!response) return;
-
-      const data = await response.json();
-      const { accounts, settings, checkpoints } = data;
-
-      if (!settings || !settings.enabled || !accounts || accounts.length === 0) return;
-
-      let changed = false;
-      const now = Date.now();
-
-      for (const account of accounts) {
-        if (!account.availableAt) continue;
-
-        const availableTime = new Date(account.availableAt).getTime();
-        const totalSeconds = Math.max(0, Math.ceil((availableTime - now) / 1000));
-        
-        const accountCheckpoints = checkpoints[account.id] || [];
-
-        // 1. Check exact trigger (released!)
-        if (totalSeconds === 0 && !accountCheckpoints.includes('exact')) {
-          if (settings.notifyAtExact) {
-            await showNotification(
-              '🟢 Claude Disponível!',
-              `A conta ${account.email} foi liberada. Você já pode enviar novas mensagens!`,
-              `claude-cooldown-${account.id}-exact`
-            );
-          }
-          accountCheckpoints.push('exact');
-          checkpoints[account.id] = accountCheckpoints;
-          changed = true;
-        }
-
-        // 2. Check 1m warning (60s)
-        if (totalSeconds > 0 && totalSeconds <= 60 && !accountCheckpoints.includes('1m')) {
-          if (settings.notifyAt1m) {
-            await showNotification(
-              '⏳ 1 Minuto Restante',
-              `A conta ${account.email} será liberada em 1 minuto. Prepare seu prompt!`,
-              `claude-cooldown-${account.id}-1m`
-            );
-          }
-          accountCheckpoints.push('1m');
-          checkpoints[account.id] = accountCheckpoints;
-          changed = true;
-        }
-
-        // 3. Check 5m warning (300s)
-        if (totalSeconds > 0 && totalSeconds <= 300 && totalSeconds > 240 && !accountCheckpoints.includes('5m')) {
-          if (settings.notifyAt5m) {
-            await showNotification(
-              '⏳ 5 Minutos Restantes',
-              `A conta ${account.email} será liberada em 5 minutos.`,
-              `claude-cooldown-${account.id}-5m`
-            );
-          }
-          accountCheckpoints.push('5m');
-          checkpoints[account.id] = accountCheckpoints;
-          changed = true;
-        }
-
-        // 4. Check 10m warning (600s)
-        if (totalSeconds > 0 && totalSeconds <= 600 && totalSeconds > 540 && !accountCheckpoints.includes('10m')) {
-          if (settings.notifyAt10m) {
-            await showNotification(
-              '⏳ 10 Minutos Restantes',
-              `A conta ${account.email} será liberada em 10 minutos.`,
-              `claude-cooldown-${account.id}-10m`
-            );
-          }
-          accountCheckpoints.push('10m');
-          checkpoints[account.id] = accountCheckpoints;
-          changed = true;
-        }
-
-        // 5. Check 30m warning (1800s)
-        if (totalSeconds > 0 && totalSeconds <= 1800 && totalSeconds > 1740 && !accountCheckpoints.includes('30m')) {
-          if (settings.notifyAt30m) {
-            await showNotification(
-              '⏳ 30 Minutos Restantes',
-              `A conta ${account.email} será liberada em 30 minutos.`,
-              `claude-cooldown-${account.id}-30m`
-            );
-          }
-          accountCheckpoints.push('30m');
-          checkpoints[account.id] = accountCheckpoints;
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        // Save back to cache
-        await cache.put(
-          '/api/cooldown-data',
-          new Response(JSON.stringify({ accounts, settings, checkpoints }), {
-            headers: { 'Content-Type': 'application/json' }
-          })
-        );
-
-        // Notify active React clients to sync checkpoints
-        const clients = await self.clients.matchAll();
-        clients.forEach((client) => {
-          client.postMessage({
-            type: 'CHECKPOINTS_UPDATED',
-            checkpoints
-          });
-        });
-      }
-    } catch (e) {
-      console.error('Error in background ticking:', e);
-    }
-  }, 5000);
-}
+// NOTE: this used to run a second, independent notification loop (polling a
+// local cache every 5s and calling showNotification itself), duplicating
+// exactly what the real Web Push from the server already does. Having two
+// systems fire the same checkpoint caused inconsistent-looking notifications
+// (a race between this local one, sometimes firing before the icon assets
+// were cached, and the real push arriving with the icon already loaded).
+// The server-side push (see the 'push' event handler below) is now the
+// single source of truth for background notifications, so this is a no-op.
+function startBackgroundTicking() {}
 
 // Display native browser notification
 async function showNotification(title, body, tag) {
